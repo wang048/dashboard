@@ -1,0 +1,101 @@
+#導入相關模組
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+
+import plotly.express as px
+import plotly.graph_objects as go
+from IPython.display import HTML
+import pandas as pd
+
+df_data = pd.read_excel(r"\\tpfile01\AD0100\AD0120\24.每週固定會議\人力需求統計分析表.xlsx")
+df_data.head()
+
+#處理excel檔案裡面的資料
+df_data.head()
+df_data_month = df_data['Month'].fillna(method='pad') #填補NAN值 (抓出獨立的欄位)
+df_data_week = df_data['Week'].fillna(method='pad') #填補NAN值 (抓出獨立的欄位)
+df_data_date = df_data['Date'].fillna(method='pad') #填補NAN值 (抓出獨立的欄位)
+df_data_date2 = df_data['Unnamed: 4'].fillna(method='pad') #填補NAN值 (抓出獨立的欄位)
+df_data_result = df_data.drop(["Month","Week","Date","Unnamed: 4"],axis=1) #拿掉舊的month欄位 (新的dataframe)
+
+df_data_result.insert(0,column="Unnamed: 4",value=df_data_date) #補上新的month欄位 (★不需要定義新的函數)
+df_data_result.insert(0,column="Date",value=df_data_date) #補上新的month欄位 (★不需要定義新的函數)
+df_data_result.insert(0,column="Week",value=df_data_week) #補上新的month欄位 (★不需要定義新的函數)
+df_data_result.insert(0,column="Month",value=df_data_month) #補上新的month欄位 (★不需要定義新的函數)
+
+df1 = df_data_result
+df1
+
+# 下一步 只顯示當週以前的數據
+# 需要透過日期篩選，需要呈現的資料 (顯示上週五大家的面談成果)
+
+import datetime, calendar
+from datetime import timedelta
+
+###呈現方式一 抓上週五時間
+lastFriday = datetime.date.today()
+oneday = datetime.timedelta(days = 1)
+lastMonday = datetime.date.today()
+oneday = datetime.timedelta(days = 1)
+while lastFriday.weekday() != calendar.FRIDAY:
+    lastFriday -= oneday
+print (lastFriday.strftime('%#m/%#d~%#m/%#d')) #補上#字號 就不會補0
+
+
+#呈現方式二 抓上週一時間
+now = datetime.datetime.now()
+last_week_star = now - timedelta(days=now.weekday() + 7)
+# print(last_week_star.strftime('%#m/%#d~%#m/%#d'))
+
+df2 = df1[df1["Date"]<=last_week_star.strftime('%Y-%m-%d')]
+df2
+print(last_week_star.strftime('%Y-%m-%d')) #大寫的『Y』是4位數西元顯示格式，小寫是只有2位數
+
+
+#抓本週一時間
+now = datetime.datetime.now()
+this_week_star = now - timedelta(days=now.weekday())
+this_monday = this_week_star.strftime('%Y-%m-%d')
+last_monday = last_week_star.strftime('%Y-%m-%d')
+
+#抓出每個人上週的工作重點職缺(質化的欄位資料)
+
+test = (df1['Date']==this_monday) & (df1['負責HR'] != 'Total')
+test_print = (df1.loc[test, ['負責HR','本周重點職缺']])
+print(test_print)
+
+test1 = (df1['Date']==last_monday) & (df1['負責HR'] != 'Total') & (df1['負責HR'] == 'Donna')
+test1_print = (df1.loc[test1, ['負責HR','本周重點職缺']])
+print(test1_print.values[0,1])
+
+test2 = (df1['Date']==last_monday) & (df1['負責HR'] != 'Total') & (df1['負責HR'] == 'Jessie')
+test2_print = (df1.loc[test2, ['負責HR','本周重點職缺']])
+print(test2_print.values[0,1])
+
+test3 = (df1['Date']==last_monday) & (df1['負責HR'] != 'Total') & (df1['負責HR'] == 'Jonathan')
+test3_print = (df1.loc[test3, ['負責HR','本周重點職缺']])
+print(test3_print.values[0,1])
+
+#抓出上週的量化資料(excel內有自動加總，只需要依日期篩選後抓出來呈現即可)
+
+test_total = (df1['Date']==last_monday) & (df1['負責HR'] == 'Total')
+test_total1 = (df1.loc[test_total, ['負責HR','人力需求數']])
+print(test_total1.values[0,1])
+
+test_interview = (df1['Date']==last_monday) & (df1['負責HR'] == 'Total')
+test_interview1 = (df1.loc[test_interview, ['負責HR','面談人數']])
+print(test_interview1.values[0,1])
+
+test_hired = (df1['Date']==last_monday) & (df1['負責HR'] == 'Total')
+test_hired1 = (df1.loc[test_hired, ['負責HR','錄取人數']])
+print(test_hired1.values[0,1])
+
+test_offer = (df1['Date']==last_monday) & (df1['負責HR'] == 'Total')
+test_offer1 = (df1.loc[test_offer, ['負責HR','已發offer']])
+print(test_offer1.values[0,1])
+
+test_onboard = (df1['Date']==last_monday) & (df1['負責HR'] == 'Total')
+test_onboard1 = (df1.loc[test_onboard, ['負責HR','報到人數']])
+print(test_onboard1.values[0,1])
+
