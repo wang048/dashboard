@@ -1,0 +1,68 @@
+#可用的折線圖表 (沒有拿到excel檔案，不然可加在dashboard裡面)
+
+turnover = pd.read_excel(r"\\TPfile01\AD0300\AD0310\16.人力報表\同業人力\2021-2022\2022年6月光電同業進出人力調查(HSD).xls")
+turnover.head()
+
+import plotly.graph_objs as go
+import plotly.offline as py
+ 
+line_total = df1['負責HR']=='Total'
+line_total1 = (df1.loc[line_total, ['面談人數']]) #面談人數_total
+
+line_donna = df1['負責HR']=='Donna'
+line_donna1 = (df1.loc[line_donna, ['面談人數']]) #面談人數_donna
+
+line_jessie = df1['負責HR']=='Jessie'
+line_jessie1 = (df1.loc[line_jessie, ['面談人數']]) #面談人數_jessie
+
+line_jonathan = df1['負責HR']=='Jonathan'
+line_jonathan1 = (df1.loc[line_jonathan, ['面談人數']]) #面談人數_jonathan
+
+
+#分層為total
+trace0 = go.Scatter(
+   x = df1['Date'].drop_duplicates(),
+   y = line_total1['面談人數'].tolist(),
+   name = 'Total',
+   line = dict(
+          color = ('#FF0000'),
+          width = 4, #設定線條寬度
+))
+#分層為donna
+trace1 = go.Scatter(
+   x = df1['Date'].drop_duplicates(),
+   y = line_donna1['面談人數'].tolist(),
+   name = 'Donna',
+   line = dict(
+          color = ('#000079'),
+          width = 4)
+  )
+ 
+#分層為jessie
+trace2 = go.Scatter(
+   x = df1['Date'].drop_duplicates(),
+   y = line_jessie1['面談人數'].tolist(),
+   name = 'Jessie',
+   line = dict(
+          color = ('#0000E3'),
+          width = 4)
+  )
+
+#分層為Jonathan
+trace3 = go.Scatter(
+   x = df1['Date'].drop_duplicates(),
+   y = line_jonathan1['面談人數'].tolist(),
+   name = 'Jonathan',
+   line = dict(
+          color = ('#7D7DFF'),
+          width = 4)
+  )
+
+    
+data = [trace0, trace1, trace2, trace3]
+layout = dict(title = '面談人數總額', titlefont=dict(family='Courier New, monospace', size=22, color='#7f7f7f'),
+              xaxis = dict(title = '日期',titlefont=dict(size=18)),
+              yaxis = dict(title = '人數',titlefont=dict(size=18)),
+              )
+fig3 = dict(data=data, layout=layout)
+py.plot(fig3, filename='styled-line')
