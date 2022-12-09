@@ -99,3 +99,127 @@ test_onboard = (df1['Date']==last_monday) & (df1['負責HR'] == 'Total')
 test_onboard1 = (df1.loc[test_onboard, ['負責HR','報到人數']])
 print(test_onboard1.values[0,1])
 
+import plotly_express as px
+import pandas as pd
+
+
+# pd.options.plotting.backend = "plotly"
+# df1[df1.Week==W2].plot(x='負責HR',y='人力需求數')
+
+px.bar(df1[df1.負責HR.isin(["Jessie","Donna","Total"])],x='Date',y='人力需求數',color='負責HR',barmode='group',height=600)
+print("test")
+
+#計算訓練課程執行率
+df_data_training = pd.read_excel(r"\\tnfile01\Projects\TD&ER專用\CH0130_TD&ER\2.TD\3.報表管理\1.月報\2022\AD0220訓練月報-2022年.xlsx", sheet_name="年度計劃-內訓(含預算)")
+calcu1=(len(df_data_training.課程名稱)) #計算課程總數
+calcu2=(df_data_training["實際開課月份"].isnull().sum()) #計算未開課數
+calcu3=(1-((calcu2-1)/calcu1))*100 #計算執行比率
+calcu4=str(round(calcu3,1)) #收小數點 & 轉為文字 
+print(calcu4)
+
+
+from dash import Dash, dcc, html, Input, Output
+import plotly.express as px
+import base64 #圖片讀取模組
+
+fig1 = px.bar(df1[df1.負責HR.isin(["Jessie","Donna","Total"])],x='Date',y='人力需求數',color='負責HR',barmode='group',height=600)
+fig2 = px.bar(df1[df1.負責HR.isin(["Jessie","Donna","Total"])],x='Date',y='人力需求數',color='負責HR',barmode='group',height=600)
+
+#part_3 開一個dash app，然後裡面開一個html.Div 把fig1,fig2丟進去
+
+app = Dash(__name__)
+
+#圖片讀取解碼
+image_filename = r'C:\Users\wesleywang\Desktop\●可刪\圖片3.png' # replace with your own image
+encoded_image = base64.b64encode(open(image_filename, 'rb').read())
+
+app.layout = html.Div([
+    
+    html.Div([
+        html.Div(children=[
+
+        html.Div(children=[
+        html.H1('(北區)人資招募儀表版v1.1', style={'textAlign': 'center','marginBottom': '10'}),
+        html.H3(' ■ Donna本週職缺重點：' + str(test1_print.values[0,1]) , style={'textAlign': 'left'}),
+        html.H3(' ■  Jessie  本週職缺重點：' + str(test2_print.values[0,1]), style={'textAlign': 'left'}),
+        html.H3(' ■ Jonathan本週職缺重點：' + str(test3_print.values[0,1]) , style={'textAlign': 'left'}),
+        html.H1('', style={'textAlign': 'left'}),
+        html.H1('本週招募漏斗', style={'textAlign': 'left'}),
+        html.Div(html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()), style={'width':'100%'}),style={'position':'absolute','display':'inline','float':'left'}),  #漏斗的外框
+        html.Div([ #漏斗數字的外框
+        html.H1('', style={'textAlign': 'left'}),
+        html.H3('需求人數：' + str(round(test_total1.values[0,1])) + "人" , style={'textAlign': 'center','text-indent':'120px'}),
+        html.H3('面試人數：' + str(round(test_interview1.values[0,1]))+ " 人", style={'textAlign': 'center','text-indent':'120px'}),
+        html.H3('錄取人數：' + str(round(test_hired1.values[0,1]))+ " 人" , style={'textAlign': 'center','text-indent':'120px'}),
+        html.H3('已發offer：' + str(round(test_offer1.values[0,1])) + " 人", style={'textAlign': 'center','text-indent':'120px'}),
+        html.H3('報到人數：' + str(round(test_onboard1.values[0,1]))+ " 人", style={'textAlign': 'center','text-indent':'120px'})
+        ], style={'float':'right','width':'375px','display':'inline', 'height':'200px'})  #漏斗數字的外框 
+      ], className="seven columns", style={'marginTop': '30'})
+        ], className="container"),
+        
+], style={'width':'600px', 'height':'600px','position':'relative', 'float':'left', 'border':'2px','border-style':'solid'}), #上左邊的外框
+
+                       
+                       
+        html.Div([
+        html.Div(children=[
+
+        html.Div(children=[
+        html.H1('教育訓練指標', style={'textAlign': 'center','marginBottom': '10'}),
+        html.H3(' ■ 琬婷本週工作重點：' + "待列" , style={'textAlign': 'left'}),
+        html.H3(' ■ 奎如本週工作重點：' + "待列", style={'textAlign': 'left'}),
+        html.H3(' ■ 柏瑩本週工作重點：' + "待列" , style={'textAlign': 'left'}),
+        html.H3(' ■ 雲卿本週工作重點：' + "待列" , style={'textAlign': 'left'}),
+        html.H1('', style={'textAlign': 'left'}),
+        html.H1('本週開設課程', style={'textAlign': 'left'}),
+            
+        html.H1('目前課程執行率：' + calcu4 + "%",  style={'textAlign': 'left'}),
+      ], className="seven columns", style={'marginTop': '30'})
+        ], className="container"),
+], style={'width':'600px', 'height':'600px','position':'relative', 'float':'left', 'border':'2px','border-style':'solid'}), #上左邊的外框
+                   
+    html.Div([
+    
+        html.Div(
+        children = [
+            dcc.Graph(
+                figure = fig1)], style={'width':'32%', 'height':'50%', 'float':'left', 'margin-left':'1%'}), 
+    ]), #下面的div外框
+
+
+    #好用的互動式圓餅圖，目前沒有適合資料
+    html.Div(
+    children=[
+    html.H4('Analysis of the restaurant sales'),
+    dcc.Graph(id="graph"),
+    html.P("Names:"),
+    dcc.Dropdown(id='names',
+        options=['smoker', 'day', 'time', 'sex'],
+        value='day', clearable=False
+    ),
+    html.P("Values:"),
+    dcc.Dropdown(id='values',
+        options=['total_bill', 'tip', 'size'],
+        value='total_bill', clearable=False
+    ),
+], style={'width':'30%', 'height':'200px', 'float':'left','position':'relative'}
+), #上面的div外框
+    
+    
+    
+]) #最大的div外框 (包含全部)
+
+
+
+@app.callback(
+    Output("graph", "figure"), 
+    Input("names", "value"), 
+    Input("values", "value"))
+def generate_chart(names, values):
+    df = px.data.tips() # replace with your own data source
+    fig = px.pie(df, values=values, names=names, hole=.3)
+    return fig
+
+
+app.run_server(host="0.0.0.0", port=5000)
+
