@@ -1,0 +1,46 @@
+#尋找最新的Excel檔案 (配合「處理折線圖」)
+import os
+
+test_report = r"\\TPfile01\AD0300\AD0310\16.人力報表\同業人力\2021-2022"
+# list=os.listdir(file_dir)
+# list.sort(key=lambda fn: os.path.getmtime(file_dir+fn) if not os.path.isdir(file_dir+fn) else 0)
+
+def new_report(test_report):
+    lists = os.listdir(test_report)                                    #列出目錄的下所有文件和文件夾保存到lists
+#     print(list)
+    lists.sort(key=lambda fn:os.path.getmtime(test_report + "\\" + fn))#按時間排序
+    file_new = os.path.join(test_report,lists[-1])                     #獲取最新的文件保存到file_new
+#     print(file_new)
+    return file_new
+# if __name__=="__main__":
+#     test_report=r"\\TPfile01\AD0300\AD0310\16.人力報表\同業人力\2021-2022"#目錄地址
+#     new_report(test_report)
+
+abadas = str(new_report(test_report))
+df_data_abadas = pd.read_excel(abadas)
+
+df_data_abadas
+
+#再讀取&計算最新excel檔案內容
+df_data_total = df_data_abadas
+# df_data_total = pd.read_excel(r"\\TPfile01\AD0300\AD0310\16.人力報表\同業人力\2021-2022\2022年6月光電同業進出人力調查(HSD).xls")
+
+df_data_total_company = df_data_total['Company'].fillna(method='pad') #填補NAN值 (抓出獨立的欄位)
+df_data_total_company2 = df_data_total['Unnamed: 1'].fillna(method='pad') #填補NAN值 (抓出獨立的欄位)
+df_data_total_company3 = df_data_total['Unnamed: 2'].fillna(method='pad') #填補NAN值 (抓出獨立的欄位)
+df_data_total_company4 = df_data_total['Unnamed: 3'].fillna(method='pad') #填補NAN值 (抓出獨立的欄位)
+df_data_total_company5 = df_data_total.drop(["Company","Unnamed: 1","Unnamed: 2","Unnamed: 3"],axis=1) #拿掉舊的month欄位 (新的dataframe)
+
+
+df_data_total_company5.insert(0,column="Unnamed: 3",value=df_data_total_company4) #補上新的month欄位 (★不需要定義新的函數)
+df_data_total_company5.insert(0,column="Unnamed: 2",value=df_data_total_company3) #補上新的month欄位 (★不需要定義新的函數)
+df_data_total_company5.insert(0,column="Unnamed: 1",value=df_data_total_company2) #補上新的month欄位 (★不需要定義新的函數)
+df_data_total_company5.insert(0,column="Company",value=df_data_total_company) #補上新的month欄位 (★不需要定義新的函數)
+
+# df_data_total_company5_hann = df_data_total_company5['Unnamed: 1']=='全球人數'
+# df_data_total_company5_hann_1 = (df1.loc[df_data_total_company5_hann, ['人力需求數']]) #人力需求數_total
+
+df_data_total_company5[32:33].drop(['Unnamed: 1','Unnamed: 2','Unnamed: 3','Company','2020 Dec','2021 Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','2021 Dec','Total.1','備註','Total'], axis =1)  #ONLY取出第34行的資料
+df_data_total_company5_title = df_data_total_company5[32:33].drop(['Unnamed: 1','Unnamed: 2','Unnamed: 3','Company','2020 Dec','2021 Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','2021 Dec','Total.1','備註','Total'], axis =1)  #ONLY取出第34行的資料
+df_data_total_company5_title.loc[32] # 按照預設索引，查看第一列的資料
+# df_data_total_company5_title
